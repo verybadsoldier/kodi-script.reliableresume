@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<strings>
+    <!-- Plugin settings -->
+    <string id="30000">Seconds between position saves</string>
+    <string id="30002">Observe Audio Playback</string>
+    <string id="30001">Observe Video Playback</string>
+    <string id="30003">Rewind seconds when resume</string>
+    <string id="30004">Automatically resume after boot</string>
+    <string id="30005">Only observe this folder</string>
+    <string id="30006">Folder limit</string>
+</strings>
