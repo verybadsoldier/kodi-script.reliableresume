@@ -4,7 +4,7 @@
     <setting id="observe_video" type="bool" label="30001" default="false" />
     <setting id="observe_audio" type="bool" label="30002" default="true" />
     <setting id="rewind_before_play" type="enum" values="0|5|15|60|180|300" label="30003" default="0" />
-    <setting id="auto_resume" type="bool" label="30004" default="true" />
+    <setting id="auto_resume" type="bool" label="30004" default="false" />
     <setting id="observe_limit" type="bool" label="30006" default="false" />
     <setting id="observe_folder1" type="folder" label="30005" />
     <setting id="observe_folder2" type="folder" label="30005" />

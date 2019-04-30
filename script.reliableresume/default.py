@@ -1,7 +1,10 @@
-import sys, email, xbmcgui, xbmc
-import string, time, mimetypes, re, os
-import shutil
+import time
+import os
+
+import xbmcgui
+import xbmc
 import xbmcaddon
+
 
 __addonID__= "script.reliableresume"
 DATADIR = xbmc.translatePath( "special://profile/addon_data/" + __addonID__ + "/" )
@@ -11,6 +14,7 @@ DATAFILE = os.path.join( DATADIR, "ResumeSaverA.xml" )
 DATAFILE2 = os.path.join( DATADIR, "ResumeSaverB.xml" )
 
 Addon = xbmcaddon.Addon()
+
 
 class ResumePlayer:
     rewind_before_play = {}
@@ -39,7 +43,7 @@ class ResumePlayer:
             pass
         if len(items) == 0: #there is no playlist
             xbmc.Player().play(self.playing)
-            self.seekTime(play_pos)
+            self._seek_time(play_pos)
         else:
             if media == "audio":
                     playlist = xbmc.PlayList(0)
@@ -52,9 +56,9 @@ class ResumePlayer:
                 playlist.add(i)
 
             xbmc.Player().play(playlist, startpos=plspos)
-            self.seekTime(play_pos)
+            self._seek_time(play_pos)
 
-    def seekTime(self, seekTo):
+    def _seek_time(self, seekTo):
             time.sleep(1) #wait 'a bit'. if doing seek directly it does not work when we just started playing
             xbmc.Player().seekTime(seekTo)
 
@@ -93,29 +97,6 @@ class ResumePlayer:
                     items.append(line[11:-12])
         return media, items, pl_pos, play_pos
                 
-"""        def checkme(self):
-                self.plist = xbmc.PlayList(0)
-                self.plsize = self.plist.size()
-                if self.plsize !=0:
-                        self.media = "audio"
-                        for i in range (0 , self.plsize):
-                                temp = self.plist[i]
-                                self.playlist.append(xbmc.PlayListItem.getfilename(temp))
-                        return
-                else:pass
-                self.plist = xbmc.PlayList(1)
-                self.plsize = self.plist.size()                
-                if self.plsize !=0:
-                        self.media = "video"
-                        for i in range (0 , self.plsize):
-                                temp = self.plist[i]
-                                self.playlist.append(xbmc.PlayListItem.getfilename(temp))
-                        return
-                else:
-                        self.media = "-"
-                        self.plsize = "-"
-                        self.playlist = "-"
-                        return
-"""
+
 m = ResumePlayer()
 m.main()
