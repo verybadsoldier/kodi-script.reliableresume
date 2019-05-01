@@ -40,23 +40,20 @@ class ResumePlayer:
         media, items, plspos, play_pos = self._opendata()
 
         if items is None:
-            pass
-        if len(items) == 0: #there is no playlist
-            xbmc.Player().play(self.playing)
-            self._seek_time(play_pos)
+            return # nothing to play
+
+        if media == "audio":
+                playlist = xbmc.PlayList(0)
+        elif media == "video":
+                playlist = xbmc.PlayList(1)
         else:
-            if media == "audio":
-                    playlist = xbmc.PlayList(0)
-            elif media == "video":
-                    playlist = xbmc.PlayList(1)
-            else:
-                   playlist = xbmc.PlayList(0)
+               playlist = xbmc.PlayList(0)
 
-            for i in items:
-                playlist.add(i)
+        for i in items:
+            playlist.add(i)
 
-            xbmc.Player().play(playlist, startpos=plspos)
-            self._seek_time(play_pos)
+        xbmc.Player().play(playlist, startpos=plspos)
+        self._seek_time(play_pos)
 
     def _seek_time(self, seekTo):
             time.sleep(1) #wait 'a bit'. if doing seek directly it does not work when we just started playing
