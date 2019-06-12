@@ -41,27 +41,24 @@ class ResumePlayer:
         media, items, plspos, play_pos = self._opendata()
 
         if items is None:
-            pass
-        if len(items) == 0: #there is no playlist
-            xbmc.Player().play(self.playing)
-            self._seek_time(play_pos)
+            return # nothing to play
+
+        if media == "audio":
+                self.log('Creating audio playlist')
+                playlist = xbmc.PlayList(0)
+        elif media == "video":
+                self.log('Creating video playlist')
+                playlist = xbmc.PlayList(1)
         else:
-            if media == "audio":
-                    self.log('Creating audio playlist')
-                    playlist = xbmc.PlayList(0)
-            elif media == "video":
-                    self.log('Creating video playlist')
-                    playlist = xbmc.PlayList(1)
-            else:
-                    self.log('Creating audio playlist (fallback)')
-                    playlist = xbmc.PlayList(0)
+                self.log('Creating audio playlist (fallback)')
+                playlist = xbmc.PlayList(0)
 
-            for i in items:
-                self.log('Adding to playlist: ' + i)
-                playlist.add(i)
+        for i in items:
+            self.log('Adding to playlist: ' + i)
+            playlist.add(i)
 
-            xbmc.Player().play(playlist, startpos=plspos)
-            self._seek_time(play_pos)
+        xbmc.Player().play(playlist, startpos=plspos)
+        self._seek_time(play_pos)
 
     def _seek_time(self, seekTo):
             wait_time = 1

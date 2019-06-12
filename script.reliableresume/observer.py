@@ -84,6 +84,10 @@ class ResumeSaver:
             else:
                 continue  # not playing, do not write new state file and keep current as is
 
+            # we are playing, but where?
+            if not self._check_observe_folder(plist):
+                return
+
             play_pos = xbmc.Player().getTime()
             self._write_playstate(media, plist, play_pos)
 
@@ -93,7 +97,9 @@ class ResumeSaver:
         except Exception as ex:
             self._log("Exception on resume: " + str(ex))
 
-    def _check_observe_folder(self):
+    @staticmethod
+    def _check_observe_folder(playlist):
+        """Check if we are currently playing in observing folders."""
         addon = xbmcaddon.Addon(__addonID__)
 
         if not (addon.getSetting('observe_limit') == 'true'):
@@ -103,16 +109,14 @@ class ResumeSaver:
         obsFolders.append(addon.getSetting('observe_folder1'))
         obsFolders.append(addon.getSetting('observe_folder2'))
         obsFolders.append(addon.getSetting('observe_folder3'))
-        for pl in self.playlist:
+        for i in range(0, playlist.size()):
+            pl_filename = playlist[i].getfilename()
             for j in obsFolders:
-                if (len(j) > 0) and (j in pl):
+                if (len(j) > 0) and (j in pl_filename):
                     return True
         return False
 
     def _write_playstate(self, media_type, playlist, play_pos):
-        if not self._check_observe_folder():
-            return
-
         if self._currentFile == 0:
             self._write_data_ex(DATAFILE, media_type, playlist, play_pos)
             self._currentFile = 1
