@@ -30,11 +30,12 @@ class ResumePlayer:
     def __init__(self):
         pass
 
-    def log(self,msg):
-        xbmc.log("%s: %s" % (__addonID__, msg))
+    def log(self, msg):
+        xbmc.log("%s: %s" % (__addonID__, msg), level=xbmc.LOGNOTICE)
 
     def main(self):
         if not os.path.exists(DATAFILE):
+            self.log('No datafile found at: ' + DATAFILE)
             return  # no datafile
 
         media, items, plspos, play_pos = self._opendata()
@@ -46,20 +47,27 @@ class ResumePlayer:
             self._seek_time(play_pos)
         else:
             if media == "audio":
+                    self.log('Creating audio playlist')
                     playlist = xbmc.PlayList(0)
             elif media == "video":
+                    self.log('Creating video playlist')
                     playlist = xbmc.PlayList(1)
             else:
-                   playlist = xbmc.PlayList(0)
+                    self.log('Creating audio playlist (fallback)')
+                    playlist = xbmc.PlayList(0)
 
             for i in items:
+                self.log('Adding to playlist: ' + i)
                 playlist.add(i)
 
             xbmc.Player().play(playlist, startpos=plspos)
             self._seek_time(play_pos)
 
     def _seek_time(self, seekTo):
-            time.sleep(1) #wait 'a bit'. if doing seek directly it does not work when we just started playing
+            wait_time = 1
+            self.log('Sleeping before seek: %s seconds' % wait_time)
+            time.sleep(wait_time) #wait 'a bit'. if doing seek directly it does not work when we just started playing
+            self.log('Seeking to: %s' % seekTo)
             xbmc.Player().seekTime(seekTo)
 
     def _opendata(self):
@@ -67,11 +75,10 @@ class ResumePlayer:
         secondFile = DATAFILE2
 
         if ( os.access(firstFile, os.F_OK) and os.access(secondFile, os.F_OK) ):
-            self.log('Both files exisitng. checking which is newer')
+            self.log('Both files existing. checking which is newer')
             if ( os.path.getctime( secondFile ) > os.path.getctime( firstFile ) ):
                 firstFile = DATAFILE2
                 secondFile = DATAFILE
-                self.log('swapping files')
 
         try:
             return self._read_datafile(firstFile)
@@ -83,6 +90,8 @@ class ResumePlayer:
         media = None
         pl_pos = None
         items = []
+        
+        self.log('Reading datafile from: ' + datafile)
 
         with open(datafile) as fh:
             for line in fh.readlines():
@@ -95,6 +104,7 @@ class ResumePlayer:
                     media = line[7:-8]
                 elif "<plistfile>" in line:
                     items.append(line[11:-12])
+        self.log('Read datafile. PlPos:%s Items:%s media:%s PlayPos:%s' % (pl_pos, len(items), media, play_pos))
         return media, items, pl_pos, play_pos
                 
 
