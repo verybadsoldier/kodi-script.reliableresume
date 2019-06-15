@@ -89,7 +89,8 @@ class ResumeSaver:
                 return
 
             play_pos = xbmc.Player().getTime()
-            self._write_playstate(media, plist, play_pos)
+            if play_pos >= 10.0:  # do not save at the beginning to avoid resaving when starting to play but not having seeked yet
+                self._write_playstate(media, plist, play_pos)
 
     def _execute_resume(self):
         try:
