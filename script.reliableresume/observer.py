@@ -34,7 +34,7 @@ class ResumeSaver:
         self._autoResume = False
 
     def _log(self, msg):
-        xbmc._log("%s: %s" % (__addonID__, msg))
+        xbmc._log("%s: %s" % (__addonID__, msg), level=xbmc.LOGNOTICE)
 
     def _should_execute(self):
         now = time.clock()
@@ -91,6 +91,8 @@ class ResumeSaver:
             play_pos = xbmc.Player().getTime()
             if play_pos >= 10.0:  # do not save at the beginning to avoid resaving when starting to play but not having seeked yet
                 self._write_playstate(media, plist, play_pos)
+            else:
+                self._log("Playing time is only %s. Write state skipped.")
 
     def _execute_resume(self):
         try:
