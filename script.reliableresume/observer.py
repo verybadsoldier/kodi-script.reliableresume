@@ -34,7 +34,7 @@ class ResumeSaver:
         self._autoResume = False
 
     def _log(self, msg):
-        xbmc._log("%s: %s" % (__addonID__, msg), level=xbmc.LOGNOTICE)
+        xbmc.log("%s: %s" % (__addonID__, msg), level=xbmc.LOGNOTICE)
 
     def _should_execute(self):
         now = time.clock()

@@ -53,6 +53,7 @@ class ResumePlayer:
                 self.log('Creating audio playlist (fallback)')
                 playlist = xbmc.PlayList(0)
 
+        playlist.clear()
         for i in items:
             self.log('Adding to playlist: ' + i)
             playlist.add(i)
