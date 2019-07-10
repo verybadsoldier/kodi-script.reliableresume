@@ -62,10 +62,14 @@ class ResumePlayer:
 
         while True:
             self.log('Querying playing...')
-            cur_pos = xbmc.Player().getTime()
-            self.log('Waiting for play time > 1.0... Current play Time: %s' % cur_pos)
-            if cur_pos > 1.0:
-                break
+            if xbmc.Player().isPlaying():
+                cur_pos = xbmc.Player().getTime()
+                self.log('Waiting for play time > 1.0... Current play Time: %s' % cur_pos)
+                if cur_pos > 1.0:
+                    break
+            else:
+                self.log('Not playing yet...')
+            
             time.sleep(1.0)
                 
         self._seek_time(play_pos)
