@@ -88,11 +88,14 @@ class ResumeSaver:
             if not self._check_observe_folder(plist):
                 return
 
-            play_pos = xbmc.Player().getTime()
-            if play_pos >= 10.0:  # do not save at the beginning to avoid resaving when starting to play but not having seeked yet
-                self._write_playstate(media, plist, play_pos)
-            else:
-                self._log("Playing time is only %s. Write state skipped.")
+            try:
+                play_pos = xbmc.Player().getTime()
+                if play_pos >= 10.0:  # do not save at the beginning to avoid resaving when starting to play but not having seeked yet
+                    self._write_playstate(media, plist, play_pos)
+                else:
+                    self._log("Playing time is only %s. Write state skipped." % str(play_pos))
+            except Exception as e:
+                self._log("Getting current position and saving failed: %s" % str(e))
 
     def _execute_resume(self):
         try:
