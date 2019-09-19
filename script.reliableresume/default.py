@@ -40,7 +40,7 @@ class ResumePlayer:
 
         media, items, plspos, play_pos = self._opendata()
 
-        if items is None:
+        if len(items) == 0:
             return # nothing to play
 
         if media == "audio":
