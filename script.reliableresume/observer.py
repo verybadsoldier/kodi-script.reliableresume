@@ -16,7 +16,7 @@ if os.access(DATADIR, os.F_OK) == 0:
 
 
 class ResumeSaver:
-    lastExecutionTime = time.clock()
+    lastExecutionTime = time.time()
     lastConfigReadTime = 0
 
     timer_amounts = {}
@@ -37,14 +37,14 @@ class ResumeSaver:
         xbmc.log("%s: %s" % (__addonID__, msg), level=xbmc.LOGNOTICE)
 
     def _should_execute(self):
-        now = time.clock()
+        now = time.time()
         if (now - self.lastExecutionTime) >= self._executeInterval:
             self.lastExecutionTime = now
             return True
         return False
 
     def _should_read_config(self):
-        now = time.clock()
+        now = time.time()
         if (now - self.lastConfigReadTime) >= 5:
             self.lastConfigReadTime = now
             return True
