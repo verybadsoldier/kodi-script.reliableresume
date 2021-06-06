@@ -1,0 +1,35 @@
+msgid ""
+msgstr ""
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgctxt "#30000"
+msgid "Seconds between position saves"
+msgstr ""
+
+msgctxt "#30001"
+msgid "Observe Video Playback"
+msgstr ""
+
+msgctxt "#30002"
+msgid "Observe Audio Playback"
+msgstr ""
+
+msgctxt "#30003"
+msgid "Rewind seconds when resume"
+msgstr ""
+
+msgctxt "#30004"
+msgid "Automatically resume after boot"
+msgstr ""
+
+msgctxt "#30005"
+msgid "Only observe this folder"
+msgstr ""
+
+msgctxt "#30006"
+msgid "Folder limit"
+msgstr ""
