@@ -1,4 +1,7 @@
+from __future__ import unicode_literals
+
 import os
+import re
 import time
 
 import xbmcaddon
@@ -34,7 +37,7 @@ class ResumeSaver:
         self._autoResume = False
 
     def _log(self, msg):
-        xbmc.log("%s: %s" % (__addonID__, msg), level=xbmc.LOGNOTICE)
+        xbmc.log("%s: %s" % (__addonID__, msg), level=xbmc.LOGINFO)
 
     def _should_execute(self):
         now = time.time()
@@ -61,15 +64,37 @@ class ResumeSaver:
         if self._should_read_config():
             self._reload_config()
 
-    def loader(self):
+    def loader(self, monitor):
         self._reload_config()
 
         if self._autoResume:
             self._execute_resume()
+        self._log(f'PLAYERSTART-------------')
 
-        while not xbmc.abortRequested:
-            time.sleep(2)
+        while True:
+            if monitor.waitForAbort(2):
+                # Abort was requested while waiting. We should exit
+                break
 
+            numMusic = xbmc.getInfoLabel('Playlist.Length')
+            if numMusic == '':
+                continue
+                
+            plist = xbmc.PlayList(xbmc.PLAYLIST_MUSIC)
+            for i, name in enumerate(ResumeSaver.get_playlist_pathnames(plist)):
+                self._log(f'PLAYLIST #{i}: {name}')
+            
+            numMusic = int(numMusic)
+            self._log('------------------------')
+            for i in range(0, numMusic):
+                n = xbmc.getInfoLabel(f'Player.Position({i}).Filenameandpath')
+                self._log(f'PLAYER INFOLABEL #{i}: {n}')
+            self._log('------------------------ END')
+            
+            n = xbmc.getInfoLabel('Player.Filenameandpath')
+            self._log(f'PLAYER: {n}')
+            continue
+            
             self._reload_config_if_needed()
 
             if not self._should_execute():
@@ -90,6 +115,7 @@ class ResumeSaver:
 
             try:
                 play_pos = xbmc.Player().getTime()
+                
                 if play_pos >= 10.0:  # do not save at the beginning to avoid resaving when starting to play but not having seeked yet
                     self._write_playstate(media, plist, play_pos)
                 else:
@@ -115,10 +141,9 @@ class ResumeSaver:
         obsFolders.append(addon.getSetting('observe_folder1'))
         obsFolders.append(addon.getSetting('observe_folder2'))
         obsFolders.append(addon.getSetting('observe_folder3'))
-        for i in range(0, playlist.size()):
-            pl_filename = playlist[i].getfilename()
+        for pathname in ResumeSaver.get_playlist_pathnames(playlist):
             for j in obsFolders:
-                if (len(j) > 0) and (j in pl_filename):
+                if (len(j) > 0) and (j in pathname):
                     return True
         return False
 
@@ -131,17 +156,37 @@ class ResumeSaver:
             self._currentFile = 0
 
     @staticmethod
+    def get_playlist_pathnames(playlist):
+        curpos = playlist.getposition()
+        pathnames = []
+        #for i in range(-curpos, playlist.size() - curpos):
+        
+        for i in range(-20, 20):
+        
+            pathname = xbmc.getInfoLabel(f'ListitemNoWrap({i}).FilenameAndPath')
+            #pathname = xbmc.getInfoLabel(f'Container(10503).ListitemNoWrap({i}).FilenameAndPath')
+            
+            xbmc.log("%s: %s" % (__addonID__, f'Pathname for {i} is "{pathname}"'), level=xbmc.LOGINFO)
+            pathnames.append(pathname)
+        return pathnames
+            
+    @staticmethod
     def _write_data_ex(filename, media_type, playlist, play_pos):
-        with open(filename, "w") as f:
+        with open(filename, "w", encoding='utf-8') as f:
             f.write("<data>\n")
             f.write("\t<media>" + media_type + "</media>\n")
             f.write("\t<time>" + str(play_pos) + "</time>\n")
             f.write("\t<pl_pos>" + str(playlist.getposition()) + "</pl_pos>\n")
-            for i in range(0, playlist.size()):
-                f.write("\t<plistfile>" + str(playlist[i].getfilename()) + "</plistfile>\n")
+            
+            for pathname in ResumeSaver.get_playlist_pathnames(playlist):
+                f.write("\t<plistfile>" + pathname + "</plistfile>\n")
             f.write("</data>\n")
             f.close()
 
 
+xbmc.log("%s: %s" % (__addonID__, "aaaaaaaaaaaaaaa"), level=xbmc.LOGINFO)
+monitor = xbmc.Monitor()
+
 m = ResumeSaver()
-m.loader()
+xbmc.log("%s: %s" % (__addonID__, "aaaaaaaaaaaaaaa"), level=xbmc.LOGINFO)
+m.loader(monitor)

@@ -1,9 +1,9 @@
 import time
 import os
 
-import xbmcgui
 import xbmc
 import xbmcaddon
+import xbmcgui
 
 
 __addonID__= "script.reliableresume"
@@ -31,7 +31,7 @@ class ResumePlayer:
         pass
 
     def log(self, msg):
-        xbmc.log("%s: %s" % (__addonID__, msg), level=xbmc.LOGNOTICE)
+        xbmc.log("%s: %s" % (__addonID__, msg), level=xbmc.LOGINFO)
 
     def main(self):
         if not os.path.exists(DATAFILE):
@@ -45,26 +45,29 @@ class ResumePlayer:
 
         if media == "audio":
                 self.log('Creating audio playlist')
-                playlist = xbmc.PlayList(0)
+                playlist = xbmc.PlayList(xbmc.PLAYLIST_MUSIC)
         elif media == "video":
                 self.log('Creating video playlist')
                 playlist = xbmc.PlayList(1)
         else:
                 self.log('Creating audio playlist (fallback)')
-                playlist = xbmc.PlayList(0)
+                playlist = xbmc.PlayList(xbmc.PLAYLIST_MUSIC)
 
         playlist.clear()
-        for i in items:
-            self.log('Adding to playlist: ' + i)
-            playlist.add(i)
+        for i, path in enumerate(items):
+            listitem = xbmcgui.ListItem()
+            # it is IMPORTANT to create a ListItem and set this info otherwise the InfoLabels won't return information correctly in the observer!!
+            listitem.setInfo(type="Music",infoLabels={})
+            self.log(f'Adding to playlist: {path}')
+            playlist.add(path, listitem)
 
-        xbmc.Player().play(playlist, startpos=plspos)
+        xbmc.Player().play(playlist)
 
         while True:
             self.log('Querying playing...')
             if xbmc.Player().isPlaying():
                 cur_pos = xbmc.Player().getTime()
-                self.log('Waiting for play time > 1.0... Current play Time: %s' % cur_pos)
+                self.log(f'Waiting for play time > 1.0... Current play Time: {cur_pos}')
                 if cur_pos > 1.0:
                     break
             else:
@@ -76,9 +79,9 @@ class ResumePlayer:
 
     def _seek_time(self, seekTo):
             wait_time = 1
-            self.log('Sleeping before seek: %s seconds' % wait_time)
+            self.log(f'Sleeping before seek: {wait_time} seconds')
             time.sleep(wait_time) #wait 'a bit'. if doing seek directly it does not work when we just started playing
-            self.log('Seeking to: %s' % seekTo)
+            self.log(f'Seeking to: {seekTo}')
             xbmc.Player().seekTime(seekTo)
 
     def _opendata(self):
@@ -102,9 +105,9 @@ class ResumePlayer:
         pl_pos = None
         items = []
         
-        self.log('Reading datafile from: ' + datafile)
+        self.log(f'Reading datafile from: {datafile}')
 
-        with open(datafile) as fh:
+        with open(datafile, 'r', encoding='utf-8') as fh:
             for line in fh.readlines():
                 line = line.strip()
                 if "<pl_pos>" in line:
@@ -115,7 +118,7 @@ class ResumePlayer:
                     media = line[7:-8]
                 elif "<plistfile>" in line:
                     items.append(line[11:-12])
-        self.log('Read datafile. PlPos:%s Items:%s media:%s PlayPos:%s' % (pl_pos, len(items), media, play_pos))
+        self.log(f'Read datafile. PlPos:{pl_pos} Items:{len(items)} media:{media} PlayPos:{play_pos}')
         return media, items, pl_pos, play_pos
                 
 
