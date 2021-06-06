@@ -35,6 +35,7 @@ class ResumeSaver:
         self._audioEnable = False
         self._executeInterval = 60
         self._autoResume = False
+        self._monitor = xbmc.Monitor()
 
     def _log(self, msg):
         xbmc.log("%s: %s" % (__addonID__, msg), level=xbmc.LOGINFO)
@@ -64,47 +65,27 @@ class ResumeSaver:
         if self._should_read_config():
             self._reload_config()
 
-    def loader(self, monitor):
+    def run(self):
         self._reload_config()
 
         if self._autoResume:
             self._execute_resume()
-        self._log(f'PLAYERSTART-------------')
 
-        while True:
-            if monitor.waitForAbort(2):
+        while not self._monitor.abortRequested():
+            if self._monitor.waitForAbort(2):
                 # Abort was requested while waiting. We should exit
                 break
 
-            numMusic = xbmc.getInfoLabel('Playlist.Length')
-            if numMusic == '':
-                continue
-                
-            plist = xbmc.PlayList(xbmc.PLAYLIST_MUSIC)
-            for i, name in enumerate(ResumeSaver.get_playlist_pathnames(plist)):
-                self._log(f'PLAYLIST #{i}: {name}')
-            
-            numMusic = int(numMusic)
-            self._log('------------------------')
-            for i in range(0, numMusic):
-                n = xbmc.getInfoLabel(f'Player.Position({i}).Filenameandpath')
-                self._log(f'PLAYER INFOLABEL #{i}: {n}')
-            self._log('------------------------ END')
-            
-            n = xbmc.getInfoLabel('Player.Filenameandpath')
-            self._log(f'PLAYER: {n}')
-            continue
-            
             self._reload_config_if_needed()
 
             if not self._should_execute():
                 continue
 
             if xbmc.Player().isPlayingAudio() and self._audioEnable:
-                plist = xbmc.PlayList(0)
-                media = "audio"
+                plist = xbmc.PlayList(xbmc.PLAYLIST_MUSIC)
+                media = "music"
             elif xbmc.Player().isPlayingVideo() and self._videoEnable:
-                plist = xbmc.PlayList(1)
+                plist = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
                 media = "video"
             else:
                 continue  # not playing, do not write new state file and keep current as is
@@ -119,7 +100,7 @@ class ResumeSaver:
                 if play_pos >= 10.0:  # do not save at the beginning to avoid resaving when starting to play but not having seeked yet
                     self._write_playstate(media, plist, play_pos)
                 else:
-                    self._log("Playing time is only %s. Write state skipped." % str(play_pos))
+                    self._log(f"Player media position is only {play_pos:.3} s. Write state skipped.")
             except Exception as e:
                 self._log("Getting current position and saving failed: %s" % str(e))
 
@@ -157,19 +138,9 @@ class ResumeSaver:
 
     @staticmethod
     def get_playlist_pathnames(playlist):
-        curpos = playlist.getposition()
-        pathnames = []
-        #for i in range(-curpos, playlist.size() - curpos):
-        
-        for i in range(-20, 20):
-        
-            pathname = xbmc.getInfoLabel(f'ListitemNoWrap({i}).FilenameAndPath')
-            #pathname = xbmc.getInfoLabel(f'Container(10503).ListitemNoWrap({i}).FilenameAndPath')
-            
-            xbmc.log("%s: %s" % (__addonID__, f'Pathname for {i} is "{pathname}"'), level=xbmc.LOGINFO)
-            pathnames.append(pathname)
-        return pathnames
-            
+        for i in range(0, playlist.size()):
+            yield xbmc.getInfoLabel(f'Player.Position({i}).Filenameandpath')
+
     @staticmethod
     def _write_data_ex(filename, media_type, playlist, play_pos):
         with open(filename, "w", encoding='utf-8') as f:
@@ -184,9 +155,6 @@ class ResumeSaver:
             f.close()
 
 
-xbmc.log("%s: %s" % (__addonID__, "aaaaaaaaaaaaaaa"), level=xbmc.LOGINFO)
-monitor = xbmc.Monitor()
-
-m = ResumeSaver()
-xbmc.log("%s: %s" % (__addonID__, "aaaaaaaaaaaaaaa"), level=xbmc.LOGINFO)
-m.loader(monitor)
+if __name__ == '__main__':
+    m = ResumeSaver()
+    m.run()

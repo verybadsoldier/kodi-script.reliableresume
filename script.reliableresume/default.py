@@ -3,11 +3,12 @@ import os
 
 import xbmc
 import xbmcaddon
+import xbmcvfs
 import xbmcgui
 
 
 __addonID__= "script.reliableresume"
-DATADIR = xbmc.translatePath( "special://profile/addon_data/" + __addonID__ + "/" )
+DATADIR = xbmcvfs.translatePath("special://profile/addon_data/" + __addonID__ + "/")
 
 AUTOEXEC_DIR = xbmc.translatePath( "special://profile" )
 DATAFILE = os.path.join( DATADIR, "ResumeSaverA.xml" )
@@ -17,13 +18,13 @@ Addon = xbmcaddon.Addon()
 
 
 class ResumePlayer:
-    rewind_before_play = {}
-    rewind_before_play['0'] = 0.0
-    rewind_before_play['1'] = 5.0
-    rewind_before_play['2'] = 15.0
-    rewind_before_play['3'] = 60.0
-    rewind_before_play['4'] = 180.0
-    rewind_before_play['5'] = 300.0
+    rewind_before_play = {'0': 0.0,
+                          '1': 5.0,
+                          '2': 15.0,
+                          '3': 60.0,
+                          '4': 180.0,
+                          '5': 300.0,
+                          }
 
     rewind_s = rewind_before_play[Addon.getSetting('rewind_before_play')]
 
@@ -41,27 +42,28 @@ class ResumePlayer:
         media, items, plspos, play_pos = self._opendata()
 
         if len(items) == 0:
-            return # nothing to play
+            return  # nothing to play
 
-        if media == "audio":
-                self.log('Creating audio playlist')
-                playlist = xbmc.PlayList(xbmc.PLAYLIST_MUSIC)
+        if media == "music":
+            self.log('Creating audio playlist')
+            playlist = xbmc.PlayList(xbmc.PLAYLIST_MUSIC)
         elif media == "video":
-                self.log('Creating video playlist')
-                playlist = xbmc.PlayList(1)
+            self.log('Creating video playlist')
+            playlist = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
         else:
-                self.log('Creating audio playlist (fallback)')
-                playlist = xbmc.PlayList(xbmc.PLAYLIST_MUSIC)
+            self.log('Creating audio playlist (fallback)')
+            playlist = xbmc.PlayList(xbmc.PLAYLIST_MUSIC)
 
         playlist.clear()
         for i, path in enumerate(items):
-            listitem = xbmcgui.ListItem()
-            # it is IMPORTANT to create a ListItem and set this info otherwise the InfoLabels won't return information correctly in the observer!!
-            listitem.setInfo(type="Music",infoLabels={})
+            li = xbmcgui.ListItem()
+            # it is IMPORTANT to create a ListItem and set this info otherwise the InfoLabels won't return information
+            # correctly in the observer!!
+            li.setInfo(type=media, infoLabels={})
             self.log(f'Adding to playlist: {path}')
-            playlist.add(path, listitem)
+            playlist.add(path, li)
 
-        xbmc.Player().play(playlist)
+        xbmc.Player().play(playlist, startpos=plspos)
 
         while True:
             self.log('Querying playing...')
@@ -77,27 +79,27 @@ class ResumePlayer:
                 
         self._seek_time(play_pos)
 
-    def _seek_time(self, seekTo):
-            wait_time = 1
-            self.log(f'Sleeping before seek: {wait_time} seconds')
-            time.sleep(wait_time) #wait 'a bit'. if doing seek directly it does not work when we just started playing
-            self.log(f'Seeking to: {seekTo}')
-            xbmc.Player().seekTime(seekTo)
+    def _seek_time(self, seek_to):
+        wait_time = 1
+        self.log(f'Sleeping before seek: {wait_time} seconds')
+        time.sleep(wait_time)  # wait 'a bit'. if doing seek directly it does not work when we just started playing
+        self.log(f'Seeking to: {seek_to}')
+        xbmc.Player().seekTime(seek_to)
 
     def _opendata(self):
-        firstFile = DATAFILE
-        secondFile = DATAFILE2
+        first_file = DATAFILE
+        second_file = DATAFILE2
 
-        if ( os.access(firstFile, os.F_OK) and os.access(secondFile, os.F_OK) ):
+        if os.access(first_file, os.F_OK) and os.access(second_file, os.F_OK):
             self.log('Both files existing. checking which is newer')
-            if ( os.path.getctime( secondFile ) > os.path.getctime( firstFile ) ):
-                firstFile = DATAFILE2
-                secondFile = DATAFILE
+            if os.path.getctime( second_file ) > os.path.getctime( first_file ):
+                first_file = DATAFILE2
+                second_file = DATAFILE
 
         try:
-            return self._read_datafile(firstFile)
+            return self._read_datafile(first_file)
         except:
-            return self._read_datafile(secondFile)
+            return self._read_datafile(second_file)
 
     def _read_datafile(self, datafile):
         play_pos = None
@@ -118,7 +120,7 @@ class ResumePlayer:
                     media = line[7:-8]
                 elif "<plistfile>" in line:
                     items.append(line[11:-12])
-        self.log(f'Read datafile. PlPos:{pl_pos} Items:{len(items)} media:{media} PlayPos:{play_pos}')
+        self.log(f'Read datafile. PlPos:{pl_pos} Items:{len(items)} media:{media} PlayPos: {play_pos}')
         return media, items, pl_pos, play_pos
                 
 
