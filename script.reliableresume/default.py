@@ -10,7 +10,7 @@ import xbmcgui
 __addonID__= "script.reliableresume"
 DATADIR = xbmcvfs.translatePath("special://profile/addon_data/" + __addonID__ + "/")
 
-AUTOEXEC_DIR = xbmc.translatePath( "special://profile" )
+AUTOEXEC_DIR = xbmcvfs.translatePath( "special://profile" )
 DATAFILE = os.path.join( DATADIR, "ResumeSaverA.xml" )
 DATAFILE2 = os.path.join( DATADIR, "ResumeSaverB.xml" )
 
