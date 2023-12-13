@@ -140,7 +140,8 @@ class ResumeSaver:
     @staticmethod
     def get_playlist_pathnames(playlist):
         for i in range(0, playlist.size()):
-            yield xbmc.getInfoLabel(f'Player.Position({i}).Filenameandpath')
+            yield playlist[i].getPath()
+
 
     @staticmethod
     def _write_data_ex(filename, media_type, playlist, play_pos):
