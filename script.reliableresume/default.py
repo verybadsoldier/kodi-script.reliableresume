@@ -44,6 +44,11 @@ class ResumePlayer:
         if len(items) == 0:
             return  # nothing to play
 
+        xbmc.Player().stop()
+
+        while xbmc.Player().isPlaying():
+            xbmc.sleep(100)
+
         if media == "music":
             self.log('Creating audio playlist')
             playlist = xbmc.PlayList(xbmc.PLAYLIST_MUSIC)
@@ -63,6 +68,7 @@ class ResumePlayer:
             self.log(f'Adding to playlist: {path}')
             playlist.add(path, li)
 
+        self.log("Starting playlist...")
         xbmc.Player().play(playlist, startpos=plspos)
 
         while True:
